@@ -1,22 +1,15 @@
-# Power Cube
+# Particle System in DCL triggered by item pickup and drop.
 
-_demo of power-cube scene running in preview._
+Particle System using Markov chains and three animated spirals.
+There is included blender file with python script that converts 2D png of Crypto Punk into 3D model using cubes and attempts colour to depth mapping.
 
-https://github.com/Immersive-Collective/Particle-System-in-DCL/blob/main/utils/Claire.mp4
-
-## Description
-
-Using simple planes to create a force field effect that blocks the player from reaching the access card. This scene also demonstrate the new `Attachable` feature, which is used for picking up the power cube. To view the scene, please visit [here](https://power-cube.vercel.app/).
-
-## Instructions
-
-Get close to the power cube before picking it up. Use your mouse to look around and <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> keys on your keyboard to move forward, left, backward and right respectively. The <kbd>E</kbd> key is used to pick up and put down the cube. Remove the power cube from its base to turn off the forcefield.
+https://github.com/Immersive-Collective/Particle-System-in-DCL/assets/18751916/da3e2563-1c73-4b00-9999-88489fb82c28
 
 ## Try it out
 
 **Previewing the scene**
 
-1. Download this full repository from [sdk7-goerli-plaza](https://github.com/decentraland/sdk7-goerli-plaza/tree/main), including this and several other example scenes on SDK7.
+1. Download this full repository made in Decentraland SDK7
 
 2. Install the [Decentraland Editor](https://docs.decentraland.org/creator/development-guide/sdk7/editor/)
 
@@ -32,9 +25,6 @@ npm run start
 
 ## Acknowledgements
 
-The following files were taken from https://freesound.org/:
-
-- _cubePickup.mp3_ modified from https://freesound.org/people/dster777/sounds/344549/
-- _cubePutDown.mp3_ modified from https://freesound.org/people/dster777/sounds/344549/
-- _powerUp.mp3_ modified from https://freesound.org/people/DrMrSir/sounds/529558/
-- _powerDown.mp3_ modified from https://freesound.org/people/DrMrSir/sounds/529558/
+Repo inspired by Power Cube in Awesome repository example and submitted in Claire Silver AI contest.
+Utilising chatGPT vision to generate SDK7 code and to python script.
+![punk](https://github.com/Immersive-Collective/Particle-System-in-DCL/assets/18751916/a3983fe6-010b-428c-b4b6-000bf7de1083)
