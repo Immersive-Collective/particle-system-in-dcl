@@ -1,0 +1,48 @@
+{
+  "ecs7": true,
+  "runtimeVersion": "7",
+  "display": {
+    "title": "Happy Bday Claire",
+    "favicon": "favicon_asset"
+  },
+  "contact": {
+    "name": "author-name",
+    "email": ""
+  },
+  "owner": "",
+  "scene": {
+    "parcels": [
+      "128,131",
+      "128,130"
+    ],
+    "base": "128,131"
+  },
+  "policy": {
+    "contentRating": "E",
+    "fly": true,
+    "voiceEnabled": true,
+    "blacklist": []
+  },
+  "main": "bin/game.js",
+  "tags": [],
+  "spawnPoints": [
+    {
+      "name": "spawn1",
+      "default": true,
+      "position": {
+        "x": 7.3,
+        "y": 1,
+        "z": -15
+      },
+      "cameraTarget": {
+        "x": 8,
+        "y": 1,
+        "z": -14
+      }
+    }
+  ],
+  "requiredPermissions": [
+    "ALLOW_TO_MOVE_PLAYER_INSIDE_SCENE"
+  ],
+  "name": "power-cube"
+}
