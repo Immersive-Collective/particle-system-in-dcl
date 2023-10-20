@@ -1,6 +1,6 @@
 # Particle System in Decentraland
 
-Particle System using Markov chains and three animated spirals. Particles are triggered by 3D model drop and pick up. Sounds are triggered as well as on/off.
+Particle System using Markov chains and four animated spirals. Particles are triggered by 3D model drop and pick up. Sounds are triggered once actions take place.
 There is included blender file with python script that converts 2D png of Crypto Punk into 3D model using cubes and attempts colour to depth mapping.
 
 https://github.com/Immersive-Collective/Particle-System-in-DCL/assets/18751916/da3e2563-1c73-4b00-9999-88489fb82c28
@@ -26,7 +26,8 @@ npm run start
 ## Acknowledgements
 
 Repo inspired by Power Cube in Awesome repository example and submitted in Claire Silver AI contest.
-Utilising chatGPT vision to generate SDK7 code and to python script.
+Utilising chatGPT vision to generate SDK7 code and to python script using images as input. 
+Sounds generated using StableAudio and modular synth.
 
 ![punk](https://github.com/Immersive-Collective/Particle-System-in-DCL/assets/18751916/a3983fe6-010b-428c-b4b6-000bf7de1083)
 
