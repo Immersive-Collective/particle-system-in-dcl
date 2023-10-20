@@ -2,7 +2,7 @@
 
 _demo of power-cube scene running in preview._
 
-![demo](https://github.com/decentraland-scenes/power-cube/blob/master/screenshots/power-cube.gif)
+![demo](https://github.com/Immersive-Collective/Particle-System-in-DCL/blob/main/utils/Claire.mp4)
 
 ## Description
 
