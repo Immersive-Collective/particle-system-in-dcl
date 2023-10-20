@@ -27,4 +27,7 @@ npm run start
 
 Repo inspired by Power Cube in Awesome repository example and submitted in Claire Silver AI contest.
 Utilising chatGPT vision to generate SDK7 code and to python script.
+
 ![punk](https://github.com/Immersive-Collective/Particle-System-in-DCL/assets/18751916/a3983fe6-010b-428c-b4b6-000bf7de1083)
+![p5.js spiral](https://github.com/Immersive-Collective/Particle-System-in-DCL/assets/18751916/75e8efe3-7550-4372-9039-cc4238c81202)
+
