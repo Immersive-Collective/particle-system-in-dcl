@@ -1,184 +1,106 @@
-import { engine, Material, MeshRenderer, PBMaterial_PbrMaterial, Schemas, Transform } from '@dcl/sdk/ecs'
-import { Color4, Quaternion, Vector3 } from '@dcl/sdk/math'
-import { playSound,PartAudio } from './sound';
+import { engine, Material, MeshRenderer, PBMaterial_PbrMaterial, Schemas, Transform } from '@dcl/sdk/ecs';
+import { Color4, Quaternion, Vector3 } from '@dcl/sdk/math';
 
-
-let timeElapsed = 0; // A global timer to track elapsed time.
+let timeElapsed = 0;
 
 export const ParticleState = {
-  ACTIVE: "S0",
-  DROPPING: "S1",
-  INACTIVE: "S2"
+  ACTIVE: "ACTIVE",
+  DROPPING: "DROPPING",
+  INACTIVE: "INACTIVE"
 };
 
-export const Droplet = engine.defineComponent('Droplet', {
-  lifetime: Schemas.Float // time after which the droplet will be destroyed
-});
+
+const transitionProbabilities = [0.3, 0.2, 0.2, 0.1, 0.2];
+const tightnessArray = [0.1, 0.3, 0.5, 0.8, 1];
+const speedArray = [0.5, 1, 1.5, 2];
+const spiralCountArray = [4, 6, 8];
+const sizeArray = [0.1, 0.5, 1, 2, 5];
+
+type ParticleStateType = keyof typeof ParticleState;
 
 
 export const Particle = engine.defineComponent('Particle', {
   angle: Schemas.Float,
   radius: Schemas.Float,
-  width: Schemas.Number,
-  height: Schemas.Number,
   speed: Schemas.Number,
   spiralOffset: Schemas.Float,
-  state: Schemas.String
-
-})
+  state: Schemas.String,
+  markovStep: Schemas.Int // Current step in Markov Chain
+});
 
 export function particleSystem(dt: number) {
-  timeElapsed += dt; // Increase the global timer by the frame's time delta.
+  timeElapsed += dt;
 
   for (const [entity] of engine.getEntitiesWith(Particle, Transform)) {
     const particle = Particle.getMutable(entity);
-
     particle.angle += dt * particle.speed;
 
-    // Check if particle has completed a full rotation
     if (particle.angle >= 2 * Math.PI) {
-      particle.angle = 0; // Reset the angle
-    //  playSound(PartAudio)
+      particle.angle = 0;
 
-      // Change state here, e.g., move to the next state in the sequence
-      if (particle.state === ParticleState.ACTIVE) {
-        particle.state = ParticleState.DROPPING;
-      } else if (particle.state === ParticleState.DROPPING) {
-        particle.state = ParticleState.INACTIVE;
-      } else {
-        particle.state = ParticleState.ACTIVE; // Loop back to ACTIVE if you wish
+      // Determine next Markov step
+      const randomNumber = Math.random();
+      let sum = 0;
+      for (let prob of transitionProbabilities) {
+        sum += prob;
+        if (randomNumber <= sum) {
+          particle.markovStep = transitionProbabilities.indexOf(prob);
+          break;
+        }
       }
+
+      // Apply new settings based on Markov step
+      particle.speed = speedArray[particle.markovStep % speedArray.length];
     }
 
-    // Particle behavior based on state
-    switch (particle.state) {
-      case ParticleState.DROPPING:
-        const transform = Transform.getMutable(entity);
-        transform.position.y -= 0.1; // Modify this to control drop speed
-     //   playSound(PartAudio)
-        break;
-      case ParticleState.INACTIVE:
-        // Perhaps make it invisible or remove other interactions
-        break;
-    }
-  }
+    const transform = Transform.getMutable(entity);
+    const adjustedAngle = particle.angle * tightnessArray[particle.markovStep % tightnessArray.length];
+    const x = particle.radius * Math.cos(adjustedAngle + particle.spiralOffset);
+    const z = particle.radius * Math.sin(adjustedAngle + particle.spiralOffset);
+    const y = particle.radius * Math.sin(adjustedAngle); // Added Y-coordinate to move downward
+    transform.position = Vector3.create(x, y, z); // Added y to the position vector
+    const adjustedSize = sizeArray[particle.markovStep % sizeArray.length];
+    transform.scale = Vector3.create(adjustedSize, adjustedSize, adjustedSize);
+    
 
-  // Handle Droplet Behavior
-  for (const [entity] of engine.getEntitiesWith(Droplet, Transform)) {
-  const droplet = Droplet.getMutable(entity);
-  const transform = Transform.getMutable(entity);
 
-  // Move droplet downwards
-  transform.position.y -= 0.15; // Modify this for droplet's drop speed
-
-  // Reduce the droplet's lifetime
-  droplet.lifetime -= dt;
-
-  // Destroy the droplet if it reaches the ground or after its lifetime expires
-  if (transform.position.y <= 0 || droplet.lifetime <= 0) {
-    engine.removeEntity(entity);
   }
 }
-
-
-  // Calculate tightness based on time.
-  const tightnessAmplitude = 0.1; // Difference between max and min tightness
-  const tightnessBase = 0.01; // Base value
-  const tightness = tightnessBase + tightnessAmplitude * Math.sin(Math.PI * timeElapsed / 10); // 2 sec loop
-
-  for (const [entity] of engine.getEntitiesWith(Particle, Transform)) {
-    const particle = Particle.getMutable(entity)
-    particle.angle += dt * particle.speed 
-
-    // Adjust angle based on new tightness value.
-    const adjustedAngle = particle.angle * tightness;
-    const x = particle.radius * Math.cos(adjustedAngle + particle.spiralOffset)
-    const z = particle.radius * Math.sin(adjustedAngle + particle.spiralOffset)
-
-    const transform = Transform.getMutable(entity)
-    transform.position = Vector3.create(x, 0, z)
-  }
-}
-
-/*
-albedoColor: Color4.create(0.5, 1.5, 2),
-emissiveColor: Color4.create(0.5, 1.5, 2)
-*/
 
 const material: PBMaterial_PbrMaterial = {
   metallic: 1,
-  albedoColor: Color4.create(0.5,1.5, 2),
+  albedoColor: Color4.create(0.5, 1.5, 2),
   emissiveColor: Color4.create(0.2, 0.5, 2)
-}
+};
 
-const particleParentEntity = engine.addEntity()
+const particleParentEntity = engine.addEntity();
 Transform.create(particleParentEntity, {
-  position: Vector3.create(7.97,10, 4.37),
+  position: Vector3.create(7.97, 10, 4.37),
   rotation: Quaternion.fromEulerDegrees(0, 90, 0)
-})
+});
 
-const MAX_PARTICLES_PER_SPIRAL = 60
-const SPIRAL_TIGHTNESS = 0.1
-const SPIRAL_COUNT = 8
-const SPIRAL_OFFSET = (2 * Math.PI) / SPIRAL_COUNT // This creates the offset between spirals
+const MAX_PARTICLES_PER_SPIRAL = 80;
+const SPIRAL_COUNT = 10;
+const SPIRAL_OFFSET = (2 * Math.PI) / SPIRAL_COUNT;
 
 for (let s = 0; s < SPIRAL_COUNT; s++) {
   for (let i = 0; i < MAX_PARTICLES_PER_SPIRAL; i++) {
-    const particleEntity = engine.addEntity()
-    MeshRenderer.setPlane(particleEntity)
-    Material.setPbrMaterial(particleEntity, material)
-
-    const angle = i * SPIRAL_TIGHTNESS
-    const radius = i * 0.1
-
+    const particleEntity = engine.addEntity();
+    MeshRenderer.setBox(particleEntity); // Setting particles to be cubes
+    Material.setPbrMaterial(particleEntity, material);
+    
     Particle.create(particleEntity, {
-      angle: angle,
-      radius: radius,
-      height: 10,
-      speed: 0.25,
-      spiralOffset: s * SPIRAL_OFFSET
-    })
+      angle: i * 0.2,
+      radius: i * 0.3,
+      speed: 2,
+      spiralOffset: s * SPIRAL_OFFSET,
+      state: ParticleState.ACTIVE,
+      markovStep: 0
+    });
 
     Transform.create(particleEntity, {
-      rotation: Quaternion.fromEulerDegrees(0, 90, 0),
-      scale: Vector3.create(0.01, 15, 5),
+      scale: Vector3.create(0.2, 5, 0.2), // Scale for the cube
       parent: particleParentEntity
-    })
-  }
-}
-
-
-// Check Particle State to Spawn Droplets
-for (const [entity] of engine.getEntitiesWith(Particle, Transform)) {
-  const particle = Particle.getMutable(entity);
-
-  // Spawn droplet when the particle is in DROPPING state
-  if (particle.state === ParticleState.DROPPING) {
-    const dropletEntity = engine.addEntity();
-    MeshRenderer.setPlane(dropletEntity);
-    Material.setPbrMaterial(dropletEntity, material); // Assuming droplets have the same material as particles
-
-    const particleTransform = Transform.get(entity);
-    Transform.create(dropletEntity, {
-      position: Vector3.create(
-        particleTransform.position.x,
-        particleTransform.position.y,
-        particleTransform.position.z
-      ),
-      scale: Vector3.create(0.005, 0.005, 0.005)  // Adjust size for droplets
-    });
-
-    Droplet.create(dropletEntity, {
-      lifetime: 3 // Adjust droplet's lifetime as needed (in seconds)
     });
   }
-  const dropletMaterial: PBMaterial_PbrMaterial = {
-    metallic: 0,
-    albedoColor: Color4.create(0, 0.5, 1, 0.7), // Semi-transparent blue
-    emissiveColor: Color4.create(0, 0, 0)
-  };
-
 }
-
-
-
