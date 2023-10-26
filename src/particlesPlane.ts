@@ -3,7 +3,7 @@ import { Color4, Quaternion, Vector3 } from '@dcl/sdk/math';
 
 let timeElapsed = 0;
 
-export const ParticleState = {
+export const ParticleState = { //logic needs to be added for future development of particles behaviour 
   ACTIVE: "ACTIVE",
   DROPPING: "DROPPING",
   INACTIVE: "INACTIVE"
@@ -28,7 +28,7 @@ export const Particle = engine.defineComponent('Particle', {
   markovStep: Schemas.Int // Current step in Markov Chain
 });
 
-export function particleSystem(dt: number) {
+export function particleSystemPlane(dt: number) {
   timeElapsed += dt;
 
   for (const [entity] of engine.getEntitiesWith(Particle, Transform)) {
@@ -60,7 +60,7 @@ export function particleSystem(dt: number) {
     const y = particle.radius * Math.sin(adjustedAngle); // Added Y-coordinate to move downward
     transform.position = Vector3.create(x, y, z); // Added y to the position vector
     const adjustedSize = sizeArray[particle.markovStep % sizeArray.length];
-    transform.scale = Vector3.create(adjustedSize, adjustedSize, adjustedSize);
+    transform.scale = Vector3.create(x, adjustedSize, z);
     
 
 
@@ -86,7 +86,7 @@ const SPIRAL_OFFSET = (2 * Math.PI) / SPIRAL_COUNT;
 for (let s = 0; s < SPIRAL_COUNT; s++) {
   for (let i = 0; i < MAX_PARTICLES_PER_SPIRAL; i++) {
     const particleEntity = engine.addEntity();
-    MeshRenderer.setBox(particleEntity); // Setting particles to be cubes
+    MeshRenderer.setPlane(particleEntity); // Setting particles to be cubes
     Material.setPbrMaterial(particleEntity, material);
     
     Particle.create(particleEntity, {
@@ -104,3 +104,4 @@ for (let s = 0; s < SPIRAL_COUNT; s++) {
     });
   }
 }
+

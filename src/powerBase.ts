@@ -8,16 +8,59 @@ import {
   VisibilityComponent
 } from '@dcl/sdk/ecs'
 import { Vector3, Quaternion } from '@dcl/sdk/math'
-import { Particle, particleSystem } from './particles'
+
+import { Particle as ParticlePoints, particleSystemPoints } from './particlesPoints'
+import { Particle as ParticleCube, particleSystemCube } from './particlesCube'
+import { Particle as ParticlePlane, particleSystemPlane } from './particlesPlane'
+
 import { playOneShot,PowerDown, stopSound,PartAudio,playSound } from './sound'
 import * as utils from '@dcl-sdk/utils'
 
 import { Spinner } from './components'
 //import { circularSystem } from './systems'
 
-
 stopSound(PartAudio)
 stopSound(PowerDown)
+
+
+//let selectedSystem: typeof particleSystemCube | typeof particleSystemPoints | typeof particleSystemPlane;
+let selectedParticleType: typeof ParticleCube | typeof ParticlePoints | typeof ParticlePlane;
+
+let activeSystem: typeof particleSystemCube | typeof particleSystemPoints | typeof particleSystemPlane;
+
+function initializeSystem() {
+  const rand = Math.floor(Math.random() * 3);
+  
+  switch(rand) {
+    case 0:
+      activeSystem = particleSystemPoints;
+      selectedParticleType = ParticlePoints;
+
+      break;
+    case 1:
+      activeSystem = particleSystemCube;
+      selectedParticleType = ParticleCube
+
+      break;
+    case 2:
+      activeSystem = particleSystemPlane;
+      selectedParticleType = ParticlePlane
+      break;
+  }
+
+  engine.removeSystem(activeSystem);
+}
+
+initializeSystem();
+
+
+// Initialize
+//selectRandomSystem();
+
+// Run selected particle system
+
+
+
 
 // Power glows
 /*
@@ -81,7 +124,7 @@ export function createPowerBase(position: Vector3, BoxSource: string) {
     ]
   })
 
-  function togglePower(isPowerOn: boolean) {
+  function togglePower(isPowerOn: boolean ) {
     if (isPowerOn) {
       // TODO: change this workaround until the DisableComponent is available
   //    Transform.getMutable(powerBlueGlowEntity).scale = Vector3.create(0.1, 0.1, 0.1)
@@ -91,17 +134,23 @@ export function createPowerBase(position: Vector3, BoxSource: string) {
    //   Transform.getMutable(forcefieldEntity).scale = Vector3.One()
 
       try {
-        engine.addSystem(particleSystem)
-      } catch (err) {}
+        if (activeSystem) {
+          engine.removeSystem(activeSystem);  // Remove the currently selected system
+        }
+          initializeSystem();
+
+          engine.addSystem(activeSystem); // add new one 
+
+      } catch (err) {console.log(err)}
        playSound(PartAudio)
       //AudioSource.getMutable(powerUp).playing = true
 
-      for (const [entity] of engine.getEntitiesWith(Particle)) {
+      for (const [entity] of engine.getEntitiesWith(selectedParticleType)) {
         VisibilityComponent.deleteFrom(entity)
       }
     } else {
       // NOTE: particles have colliders so need to move them elsewhere
-      for (const [entity] of engine.getEntitiesWith(Particle)) {
+      for (const [entity] of engine.getEntitiesWith(selectedParticleType)) {
         VisibilityComponent.createOrReplace(entity, { visible: false })
       }
 
@@ -110,8 +159,11 @@ export function createPowerBase(position: Vector3, BoxSource: string) {
     //  Transform.getMutable(powerBlueGlowEntity).scale = Vector3.Zero()
    //   Transform.getMutable(forcefieldEntity).scale = Vector3.Zero()
       Transform.getMutable(powerRedGlowEntity).scale = Vector3.create(0.1, 0.1, 0.1)
+    
+      if (activeSystem) {
+        engine.removeSystem(activeSystem);  // Remove the currently selected system
+      }
 
-      engine.removeSystem(particleSystem)
      playOneShot(PowerDown)
      stopSound(PartAudio)
       // AudioSource.getMutable(powerDown).playing = true
